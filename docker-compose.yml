@@ -22,11 +22,11 @@ services:
     ports:
       - 8000:80
     depends_on:
-      - catalog-api
-      - products-api
-      - warehouse-api
-      - ratings-api
-      - orders-api
+      - catalog
+      - products
+      - warehouse
+      - ratings
+      - orders
 
   products:
     image: ramageek/image:php8.1-laravel
@@ -52,16 +52,6 @@ services:
     depends_on:
       - mysql
 
-  products-api:
-    image: nginx:1.19-alpine
-    volumes:
-      - ./products:/usr/local/src/products
-      - ./products/docker/nginx/conf.d:/etc/nginx/conf.d
-    ports:
-      - 8001:80
-    depends_on:
-      - products
-
   ratings:
     image: ramageek/image:php8.1-laravel
     volumes:
@@ -85,16 +75,6 @@ services:
       - LOG_LEVEL=debug
     depends_on:
       - mysql
-
-  ratings-api:
-    image: nginx:1.19-alpine
-    volumes:
-      - ./ratings:/usr/local/src/ratings
-      - ./ratings/docker/nginx/conf.d:/etc/nginx/conf.d
-    ports:
-      - 8002:80
-    depends_on:
-      - ratings
 
   ratings-consumer:
     image: ramageek/image:php8.1-laravel
@@ -148,16 +128,6 @@ services:
     depends_on:
       - mysql
 
-  warehouse-api:
-    image: nginx:1.19-alpine
-    volumes:
-      - ./warehouse:/usr/local/src/warehouse
-      - ./warehouse/docker/nginx/conf.d:/etc/nginx/conf.d
-    ports:
-      - 8003:80
-    depends_on:
-      - warehouse
-
   warehouse-consumer:
     image: ramageek/image:php8.1-laravel
     command: ["sh", "-c", "sleep 10 && php /var/www/html/artisan redis:consume"]
@@ -191,9 +161,9 @@ services:
     volumes:
       - ./catalog:/var/www/html
     environment:
-      - SERVICES_PRODUCTS_URL=http://products-api/api/v1/
-      - SERVICES_WAREHOUSE_URL=http://warehouse-api/api/v1/
-      - SERVICES_RATINGS_URL=http://ratings-api/api/v1/
+      - SERVICES_PRODUCTS_URL=http://products/api/v1/
+      - SERVICES_WAREHOUSE_URL=http://warehouse/api/v1/
+      - SERVICES_RATINGS_URL=http://ratings/api/v1/
       - APP_ENV=local
       - APP_KEY=base64:7t3iJGYKu1jqjeEQixGEL8mXwCr6XgVRmd6ryRII3Jo=
       - APP_DEBUG=true
@@ -207,22 +177,12 @@ services:
     depends_on:
       - mysql
 
-  catalog-api:
-    image: nginx:1.19-alpine
-    volumes:
-      - ./catalog:/usr/local/src/catalog
-      - ./catalog/docker/nginx/conf.d:/etc/nginx/conf.d
-    ports:
-      - 8004:80
-    depends_on:
-      - catalog
-
   orders:
     image: ramageek/image:php8.1-laravel
     volumes:
       - ./orders:/var/www/html
     environment:
-      - SERVICES_WAREHOUSE_URL=http://warehouse-api/api/v1/
+      - SERVICES_WAREHOUSE_URL=http://warehouse/api/v1/
       - APP_ENV=local
       - APP_KEY=base64:7t3iJGYKu1jqjeEQixGEL8mXwCr6XgVRmd6ryRII3Jo=
       - APP_DEBUG=true
@@ -242,19 +202,9 @@ services:
     depends_on:
       - mysql
 
-  orders-api:
-    image: nginx:1.19-alpine
-    volumes:
-      - ./orders:/usr/local/src/orders
-      - ./orders/docker/nginx/conf.d:/etc/nginx/conf.d
-    ports:
-      - 8005:80
-    depends_on:
-      - orders
-
   orders-consumer:
     image: ramageek/image:php8.1-laravel
-    command: ["sh", "-c", "sleep 10 && php /var/www/html/artisan redis:consume"]
+    command: ["sh", "-c", "sleep 2 && php /var/www/html/artisan redis:consume"]
     restart: unless-stopped
     volumes:
       - ./orders:/var/www/html
